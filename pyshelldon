@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+# encoding: utf-8
+"""
+@file    	pyshelldon
+
+@author		Italo Santos 
+@date		2012-02-08
+"""
+
+import sys, os
+import syslog
+import readline
+import ConfigParser
+
+CONFIG = "commands.conf"
+PROG_NAME = "pyshelldon"
+HOSTNAME = os.uname()[1]
+USER = os.getlogin()
+
+class stdcolor:
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    RED = '\033[91m'
+    END = '\033[0m'
+
+class Autocomplete:
+	
+    def __init__(self):
+		config = ConfigParser.ConfigParser()
+		config.read(CONFIG)
+		self.words = config.options("commands")
+		self.prefix = None
+	
+    def complete(self, prefix, index):
+        if prefix != self.prefix:
+            self.matching_words = [w for w in self.words if w.startswith(prefix)]
+            self.prefix = prefix
+        else:
+            pass                
+        try:
+            return self.matching_words[index]
+        except IndexError:
+            return None
+	
+
+def log(program, message):
+	syslog.openlog(program)
+	syslog.syslog(syslog.LOG_NOTICE, message)
+
+def help():
+	
+	print "\nCommand Help\n Usage:\n" + stdcolor.BOLD + "\t\"?\" or \"h\" or \"help"   + stdcolor.END +  " - " + stdcolor.UNDERLINE + "Print command help\n" + stdcolor.END
+	
+	config = ConfigParser.ConfigParser()
+	config.read(CONFIG)
+	c = config.items("help")
+	for i in c:
+		print stdcolor.BOLD + "\t%s" % i[0] + stdcolor.END + " - " + stdcolor.UNDERLINE + "%s" % i[1] + stdcolor.END
+	print ""
+
+def RunCommand(command):
+		
+	try:
+		if command == "help" or command == "h" or command == "?":
+			help()
+		elif command == "":
+			pass
+		elif command == "clear":
+			os.system("clear")
+		else:
+			config = ConfigParser.ConfigParser()
+			config.read(CONFIG)
+			c = config.get("commands", command)
+			os.system(c)
+			log( PROG_NAME, "%s - command: %s -> system command: %s" % (USER, command, c))
+	except Exception, e:
+		print "-%s: %s: command not found\n Use \"help\" to list all commands available" % (sys.argv[0].split(".")[0], command)
+
+def main():
+	
+	readline.parse_and_bind("tab: complete")
+	complete = Autocomplete()
+	readline.set_completer(complete.complete)
+	command = raw_input('%s:~ %s shell > ' % (HOSTNAME, USER))
+	RunCommand(command)
+
+if __name__ == "__main__":
+
+	os.system("clear")
+	log( PROG_NAME, "User: %s Logged in" % USER)
+	print stdcolor.BOLD + "\nFor HELP enter help commands: \"?\" or \"h\" or \"help\"\n" + stdcolor.END
+	while True:
+		try:
+			main()
+		except KeyboardInterrupt:
+			print ""
+		except EOFError:
+			print "\
+logout"
+			log(PROG_NAME, "User: %s Logged out" % USER)
+			sys.exit(0)
