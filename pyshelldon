@@ -65,8 +65,6 @@ def RunCommand(command):
 			help()
 		elif command == "":
 			pass
-		elif command == "clear":
-			os.system("clear")
 		else:
 			config = ConfigParser.ConfigParser()
 			config.read(CONFIG)

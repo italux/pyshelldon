@@ -5,7 +5,9 @@ Enable commands:
 - Edit config file "commands.conf"
 - First column is wizard command executed by user on pyshelldon
 - Second column is command or script was executed on SO
+
 ToDo
 
 - History function
 - up and down keyboard keys to previous and next command
+- Make command wizard receive parameter
