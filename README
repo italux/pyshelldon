@@ -6,8 +6,13 @@ Enable commands:
 - First column is wizard command executed by user on pyshelldon
 - Second column is command or script was executed on SO
 
+Is possible received arguments on pyshelldon commands e pass this args to SO, to do this put "%s" after SO command
+
+Ex.: commands.conf
+
+[commands]
+list_files = ls -la %s
+
 ToDo
 
 - History function
-- up and down keyboard keys to previous and next command
-- Make command wizard receive parameter
